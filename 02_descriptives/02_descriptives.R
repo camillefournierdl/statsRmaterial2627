@@ -24,9 +24,10 @@ library(tidyverse) # for data handling (dplyr), the pipe operator, and plotting 
 
 ##### ------- toolbox ------- #####
 
-# solution from the quiz (in-class exercice)
+# in-class exercise: what does an outlier change?
+# illustrative murder rates for a handful of areas, with one area (our "D.C.") standing out
 
-dataset <- c(20, 40, 5, 15, 10, 25, 20, 35, 30)
+dataset <- c(4, 6, 3, 5, 7, 4, 6, 5, 3, 40)
 
 # first thing: visualize it!
 
@@ -54,8 +55,28 @@ range(dataset)   # min and max
 quantile(dataset) # quartiles (25th, 50th, 75th percentile, etc.)
 IQR(dataset)     # interquartile range (Q3 - Q1), used in the boxplots later
 
-# what if I add an outlier? see last optional example below
-# to practice, you can add a point to the dataset (e.g. with value = 75) and calculate the descriptives again
+# now let's do exactly what the slides ask: compare WITH vs. WITHOUT the outlier
+
+dataset_no_outlier <- dataset[dataset != 40] # drop the "D.C." value
+
+# with the outlier
+mean(dataset)
+sd(dataset)
+median(dataset)
+quantile(dataset)
+range(dataset)
+IQR(dataset)
+
+# without the outlier
+mean(dataset_no_outlier)
+sd(dataset_no_outlier)
+median(dataset_no_outlier)
+quantile(dataset_no_outlier)
+range(dataset_no_outlier)
+IQR(dataset_no_outlier)
+
+# discuss: which statistics changed a lot (mean, sd, range)?
+# which ones barely moved (median, quartiles, IQR)?
 
 ##### ------- exercise ------- #####
 
@@ -218,105 +239,51 @@ ggplot(df, aes(x = salary, y = density)) +
 
 ## discuss the warning here! (only appears on first run)
 
-# ------------ 3.74, skip in class ------------
+##### ------- exercice (your turn) ------- #####
 
-### In a study of graduate students who took the Graduate Record Exam (GRE),
-### the Educational Testing Service recently reported that for the quantitative exams,
-### U.S. citizens ad a mean of 529 and a standard deviation of 127, whereas the non-U.S.
-### citizens had a mean of 649 and standard deviation of 129.
+# Same idea as exercise 3.22 above (comparing two groups with mean, sd, and a boxplot),
+# but with a new context: average commute time (in minutes) for a sample of workers,
+# comparing coastal cities vs. inland cities.
 
-### TRUE or FALSE?
+# Coastal cities
+coastal <- c(28, 25, 32, 30, 22, 35, 27, 31, 29)
 
-### a) Both groups had about the same amount of variability, 
-### but non-U.s. citizens performed better on average than U.S. citizens
+# Inland cities
+inland <- c(40, 45, 38, 50, 42, 47, 36, 55, 41)
 
-### b) If the distribution of scores was approximately bell shaped,
-### then almost no U.S. citizens scored below 400
-
-### c) If the scores range between 200 and 800,
-### then probably the scores for non-U.S. citizens were symmetric and bell-shaped
-
-### d) A non-U.s. citizen who scored three standard deviations below the mean had a score of 200.
-
-# to answer these questions, let's visualize it!
-
-set.seed(123)  # for reproducibility
-
-# Parameters
-n <- 5000  # sample size for simulation (can try with a different n, what happens when n is very small?)
-us_mean <- 529
-us_sd   <- 127
-nonus_mean <- 649
-nonus_sd   <- 129
-
-# Create a data frame of simulated GRE scores for U.S. and Non-U.S. citizens
-sim_data <- data.frame(
-  # Combine simulated scores for both groups into one long vector
-  score = c(rnorm(n, mean = us_mean, sd = us_sd),        # simulate U.S. scores
-            rnorm(n, mean = nonus_mean, sd = nonus_sd)), # simulate Non-U.S. scores
-
-  # Create a group label (repeats "U.S. citizens" n times, then "Non-U.S. citizens" n times)
-  group = rep(c("U.S. citizens", "Non-U.S. citizens"), each = n)
+# already combined into one dataframe for you, with a column for city type and one for commute time
+# (same approach as the "df" we built for europe/africa above)
+df_commute <- data.frame(
+  city_type = c(rep("Coastal", length(coastal)), rep("Inland", length(inland))),
+  commute   = c(coastal, inland)
 )
 
-# Look at the raw simulated score values
-sim_data$score
+df_commute
 
-# Plot a histogram of ALL scores together (ignores grouping)
-hist(sim_data$score)
+# fill in the blanks below (replace the ___ ):
 
-# Extract only the rows where group == "U.S. citizens"
-sim_data[sim_data$group == "U.S. citizens",]
+# 1) calculate the mean and standard deviation for each group
+mean_coastal <- ___
+mean_inland  <- ___
 
-# Equivalent way to do the same thing using the subset() function
-subset(sim_data, group == "U.S. citizens")
+sd_coastal <- ___
+sd_inland  <- ___
 
-# Extract just the GRE score column for U.S. citizens
-sim_data[sim_data$group == "U.S. citizens",]$score
-
-# Equivalent using subset()
-subset(sim_data, group == "U.S. citizens")$score
-
-# Histogram of GRE scores only for U.S. citizens
-hist(sim_data[sim_data$group == "U.S. citizens",]$score)
-
-# Equivalent histogram using subset()
-hist(subset(sim_data, group == "U.S. citizens")$score)
-
-# Histogram of GRE scores only for Non-U.S. citizens
-hist(sim_data[sim_data$group == "Non-U.S. citizens",]$score)
-
-# --- Using ggplot2 for cleaner visualization ---
-
-# Overlay histograms of the two groups (transparent so they overlap)
-ggplot(sim_data, aes(x = score, fill = group)) +
-  geom_histogram(alpha = 0.5, position = "identity")
-
-# Place the histograms side by side instead of overlapping, what do you think?
-ggplot(sim_data, aes(x = score, fill = group)) +
-  geom_histogram(alpha = 0.5, position = "dodge")
-
-library(viridis) # color scale
-ggplot(sim_data, aes(x = score, fill = group)) +
-  geom_histogram(alpha = 0.5, position = "identity")+
-  # Add mean line for U.S. citizens
-  geom_vline(xintercept = us_mean, linetype = "dashed", size = 1, color = viridis(2)[2]) + # could also use color = "red" for example
-  # Add mean line for Non-U.S. citizens
-  geom_vline(xintercept = nonus_mean, linetype = "dashed", size = 1, color = viridis(2)[1])
-
-# density plot with labels, theme and color scale
-## !! please be careful when using density plots rather than histogram, they work well for continuous data,
-## but can hide a lot of variation in discrete variables
-ggplot(sim_data, aes(x = score, fill = group)) +
-  geom_density(alpha = 0.5) +
-  scale_fill_viridis(discrete = T)+
-  labs(title = "Simulated GRE Quantitative Distributions",
-       x = "GRE Quantitative Score",
-       y = "Density",
-       fill = "Group") +
+# 2) visualize the comparison with a boxplot
+#    the code below is mostly filled in already (like something you'd get from an LLM) -
+#    just fill in the aes() mapping using the column names from df_commute
+ggplot(df_commute, aes(x = ___, y = ___, fill = ___)) +
+  geom_boxplot(alpha = 0.6) +
+  geom_jitter(width = 0.1, alpha = 0.7) +
   theme_minimal()
 
-# ------------ Mean vs Median vs Mode on a simulated distribution & impact of outliers ------------
+# 3) in a comment, write your conclusions:
+#    - which group has more spread (higher sd)? does the boxplot visually confirm that?
+#    - which group has the higher mean commute time, and is that difference large relative to
+#      the spread (sd) within each group?
+
+
+# ------------ Interesting visualization if we have time in class: Mean vs Median vs Mode on a simulated distribution & impact of outliers ------------
 
 # Helper: estimate the mode for *continuous* data using the peak of a kernel density -> there are other ways of calculating the mode of a distribution, especially for bimodal examples
 estimate_mode <- function(x) {
@@ -388,7 +355,7 @@ ggplot(df, aes(x = value)) +
 
 # 4) (Optional) Print the numeric summaries for discussion
 stats
- 
+
 # or nicer 
 stats %>%
   pivot_wider(names_from = stat, values_from = value) %>% # opposite of pivot_longer
@@ -478,46 +445,100 @@ stats %>%
   arrange(scenario) %>%
   print(n = Inf)
 
+# ------------ 3.74, skip in class ------------
 
-##### ------- exercice (your turn) ------- #####
+### In a study of graduate students who took the Graduate Record Exam (GRE),
+### the Educational Testing Service recently reported that for the quantitative exams,
+### U.S. citizens ad a mean of 529 and a standard deviation of 127, whereas the non-U.S.
+### citizens had a mean of 649 and standard deviation of 129.
 
-# Same idea as exercise 3.22 above (comparing two groups with mean, sd, and a boxplot),
-# but with a new context: average commute time (in minutes) for a sample of workers,
-# comparing coastal cities vs. inland cities.
+### TRUE or FALSE?
 
-# Coastal cities
-coastal <- c(28, 25, 32, 30, 22, 35, 27, 31, 29)
+### a) Both groups had about the same amount of variability, 
+### but non-U.s. citizens performed better on average than U.S. citizens
 
-# Inland cities
-inland <- c(40, 45, 38, 50, 42, 47, 36, 55, 41)
+### b) If the distribution of scores was approximately bell shaped,
+### then almost no U.S. citizens scored below 400
 
-# already combined into one dataframe for you, with a column for city type and one for commute time
-# (same approach as the "df" we built for europe/africa above)
-df_commute <- data.frame(
-  city_type = c(rep("Coastal", length(coastal)), rep("Inland", length(inland))),
-  commute   = c(coastal, inland)
+### c) If the scores range between 200 and 800,
+### then probably the scores for non-U.S. citizens were symmetric and bell-shaped
+
+### d) A non-U.s. citizen who scored three standard deviations below the mean had a score of 200.
+
+# to answer these questions, let's visualize it!
+
+set.seed(123)  # for reproducibility
+
+# Parameters
+n <- 5000  # sample size for simulation (can try with a different n, what happens when n is very small?)
+us_mean <- 529
+us_sd   <- 127
+nonus_mean <- 649
+nonus_sd   <- 129
+
+# Create a data frame of simulated GRE scores for U.S. and Non-U.S. citizens
+sim_data <- data.frame(
+  # Combine simulated scores for both groups into one long vector
+  score = c(rnorm(n, mean = us_mean, sd = us_sd),        # simulate U.S. scores
+            rnorm(n, mean = nonus_mean, sd = nonus_sd)), # simulate Non-U.S. scores
+  
+  # Create a group label (repeats "U.S. citizens" n times, then "Non-U.S. citizens" n times)
+  group = rep(c("U.S. citizens", "Non-U.S. citizens"), each = n)
 )
 
-df_commute
+# Look at the raw simulated score values
+sim_data$score
 
-# fill in the blanks below (replace the ___ ):
+# Plot a histogram of ALL scores together (ignores grouping)
+hist(sim_data$score)
 
-# 1) calculate the mean and standard deviation for each group
-mean_coastal <- ___
-mean_inland  <- ___
+# Extract only the rows where group == "U.S. citizens"
+sim_data[sim_data$group == "U.S. citizens",]
 
-sd_coastal <- ___
-sd_inland  <- ___
+# Equivalent way to do the same thing using the subset() function
+subset(sim_data, group == "U.S. citizens")
 
-# 2) visualize the comparison with a boxplot
-#    the code below is mostly filled in already (like something you'd get from an LLM) -
-#    just fill in the aes() mapping using the column names from df_commute
-ggplot(df_commute, aes(x = ___, y = ___, fill = ___)) +
-  geom_boxplot(alpha = 0.6) +
-  geom_jitter(width = 0.1, alpha = 0.7) +
+# Extract just the GRE score column for U.S. citizens
+sim_data[sim_data$group == "U.S. citizens",]$score
+
+# Equivalent using subset()
+subset(sim_data, group == "U.S. citizens")$score
+
+# Histogram of GRE scores only for U.S. citizens
+hist(sim_data[sim_data$group == "U.S. citizens",]$score)
+
+# Equivalent histogram using subset()
+hist(subset(sim_data, group == "U.S. citizens")$score)
+
+# Histogram of GRE scores only for Non-U.S. citizens
+hist(sim_data[sim_data$group == "Non-U.S. citizens",]$score)
+
+# --- Using ggplot2 for cleaner visualization ---
+
+# Overlay histograms of the two groups (transparent so they overlap)
+ggplot(sim_data, aes(x = score, fill = group)) +
+  geom_histogram(alpha = 0.5, position = "identity")
+
+# Place the histograms side by side instead of overlapping, what do you think?
+ggplot(sim_data, aes(x = score, fill = group)) +
+  geom_histogram(alpha = 0.5, position = "dodge")
+
+library(viridis) # color scale
+ggplot(sim_data, aes(x = score, fill = group)) +
+  geom_histogram(alpha = 0.5, position = "identity")+
+  # Add mean line for U.S. citizens
+  geom_vline(xintercept = us_mean, linetype = "dashed", size = 1, color = viridis(2)[2]) + # could also use color = "red" for example
+  # Add mean line for Non-U.S. citizens
+  geom_vline(xintercept = nonus_mean, linetype = "dashed", size = 1, color = viridis(2)[1])
+
+# density plot with labels, theme and color scale
+## !! please be careful when using density plots rather than histogram, they work well for continuous data,
+## but can hide a lot of variation in discrete variables
+ggplot(sim_data, aes(x = score, fill = group)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_viridis(discrete = T)+
+  labs(title = "Simulated GRE Quantitative Distributions",
+       x = "GRE Quantitative Score",
+       y = "Density",
+       fill = "Group") +
   theme_minimal()
-
-# 3) in a comment, write your conclusions:
-#    - which group has more spread (higher sd)? does the boxplot visually confirm that?
-#    - which group has the higher mean commute time, and is that difference large relative to
-#      the spread (sd) within each group?
