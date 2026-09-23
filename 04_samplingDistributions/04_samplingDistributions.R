@@ -94,7 +94,7 @@ pnorm(3) - pnorm(-3)   # ~99.7% within 3 SD
 # z-score: how many SDs (or standard errors) is an observed value from what's expected
 # for a single value:      z <- (x - mean) / sd
 # for a sample proportion: z <- (p_hat - p0) / sqrt(p0 * (1 - p0) / n)
-# for a sample mean:       z <- (xbar - mu) / (sigma / sqrt(n))
+# for a sample mean:       z <- (ybar - mu) / (sigma / sqrt(n))
 # once you have z, pnorm(z) (or 1 - pnorm(z)) gives you the corresponding probability
 
 
@@ -127,22 +127,22 @@ samp <- sample(heights$height, size = n, replace = TRUE) # that's the sample, yo
 
 samp
 
-xbar <- mean(samp) # observed sample mean
+ybar <- mean(samp) # observed sample mean
 
-xbar # not so different from the original mean
+ybar # not so different from the original mean
 
 ## >> Big underlying question: what is the likelihood of observing a mean that's THAT different, when sampling from that population randomly?
 
 # if the sample comes from the underlying distribution: mean = mu with known sigma, the sampling distribution is Normal(mu, sigma/sqrt(n)), we use the standard error
 se <- sigma / sqrt(n)
-z_xbar <- (xbar - mu) / se # calculate the z-score for that sample
-p_two_mean <- 2 * (1 - pnorm(abs(z_xbar))) # and the two-sided area under the curve for a given z-score
+z_ybar <- (ybar - mu) / se # calculate the z-score for that sample
+p_two_mean <- 2 * (1 - pnorm(abs(z_ybar))) # and the two-sided area under the curve for a given z-score
 # (we don't care whether it's larger or smaller, in this example)
 
-xbar
-z_xbar
+ybar
+z_ybar
 p_two_mean
-diffMu <- abs(xbar - mu) # absolute difference in means
+diffMu <- abs(ybar - mu) # absolute difference in means
 
 # Visualize the sampling distribution and the observed sample mean
 x_samp <- seq(mu - 4*se, mu + 4*se, length.out = 400)
@@ -152,12 +152,12 @@ ggplot(df_samp, aes(x, y)) +
   geom_line(color = "steelblue", linewidth = 1) +
   geom_area(data = subset(df_samp, x >= mu + diffMu), aes(x, y), fill = "red", alpha = 0.25) +
   geom_area(data = subset(df_samp, x <= mu - diffMu), aes(x, y), fill = "red", alpha = 0.25) +
-  geom_vline(xintercept = xbar, color = "red", linetype = "dashed") +
-  annotate("text", x = xbar, y = max(df_samp$y)*0.9,
-           label = paste0("Observed x̄ = ", round(xbar, 2), " cm"),
+  geom_vline(xintercept = ybar, color = "red", linetype = "dashed") +
+  annotate("text", x = ybar, y = max(df_samp$y)*0.9,
+           label = paste0("Observed x̄ = ", round(ybar, 2), " cm"),
            color = "red", hjust = -0.05) +
   annotate("text", x = mu + 2.5*se, y = max(df_samp$y)*0.55,
-           label = paste0("z = ", round(z_xbar, 2),
+           label = paste0("z = ", round(z_ybar, 2),
                           "\nTwo-sided p = ", signif(p_two_mean, 3)),
            color = "black", hjust = 0) +
   labs(
@@ -176,12 +176,12 @@ library(patchwork)
 
 creatingPlot <- function(heights_vec, mu, sigma, n = 36) {
   samp <- sample(heights_vec, size = n, replace = TRUE)
-  xbar <- mean(samp)
+  ybar <- mean(samp)
 
   se <- sigma / sqrt(n)
-  z_xbar <- (xbar - mu) / se
-  p_two_mean <- 2 * (1 - pnorm(abs(z_xbar)))
-  diffMu <- abs(xbar - mu)
+  z_ybar <- (ybar - mu) / se
+  p_two_mean <- 2 * (1 - pnorm(abs(z_ybar)))
+  diffMu <- abs(ybar - mu)
 
   x_samp <- seq(mu - 4 * se, mu + 4 * se, length.out = 400)
   df_samp <- tibble(x = x_samp, y = dnorm(x_samp, mean = mu, sd = se))
@@ -192,12 +192,12 @@ creatingPlot <- function(heights_vec, mu, sigma, n = 36) {
     geom_line(color = "steelblue", linewidth = 1) +
     geom_area(data = subset(df_samp, x >= mu + diffMu), aes(x, y), fill = "red", alpha = 0.25) +
     geom_area(data = subset(df_samp, x <= mu - diffMu), aes(x, y), fill = "red", alpha = 0.25) +
-    geom_vline(xintercept = xbar, color = "red", linetype = "dashed") +
-    annotate("text", x = xbar - 0.01*xbar, y = ymax * 0.9,
-             label = paste0("Observed x̄ = ", round(xbar, 2), " cm"),
+    geom_vline(xintercept = ybar, color = "red", linetype = "dashed") +
+    annotate("text", x = ybar - 0.01*ybar, y = ymax * 0.9,
+             label = paste0("Observed x̄ = ", round(ybar, 2), " cm"),
              color = "red", hjust = 0) +
     annotate("text", x = mu - 0.5 * se, y = ymax * 0.55,
-             label = paste0("z = ", round(z_xbar, 2),
+             label = paste0("z = ", round(z_ybar, 2),
                             "\nTwo-sided p = ", signif(p_two_mean, 3)))+
     # xlim(150,180)+ # could help see the difference when playing with different sigma & n -> (Ctrl + Shift + C) to comment/uncomment
     theme_minimal()
@@ -226,7 +226,133 @@ wrap_plots(plots, nrow = 3, ncol = 4) # plotting all together
 # >> Rather, we use a more conservative distribution that
 
 
-##### ------- exercices ------- #####
+##### ------- exercises ------- #####
+
+#### 4.10 - we can do it together quickly in class ####
+
+# Find the z-value for which the probability that a normal variable exceeds μ + zσ equals
+# (a) 0.01, (b) 0.025, (c) 0.05, (d) 0.10, (e) 0.25, (f) 0.50
+
+qnorm(1 - 0.01) # this is the simple way of doing it
+# note that the behavior is the area under the curve on the left of the computed quantile
+
+# next I propose a visualisation + a way to do it for multiple values
+
+# Target tail probabilities
+alpha <- c(0.01, 0.025, 0.05, 0.10, 0.25, 0.50)
+
+# z such that P(Z > z) = alpha
+z <- qnorm(1 - alpha) # we already have the answer here
+
+# Quick table (z rounded) + check via pnorm()
+res <- data.frame(alpha = alpha, z = round(z, 3),
+                  check = round(pnorm(z, lower.tail = FALSE), 3))
+print(res)
+
+# - Plot: shade right-tail area α in each panel
+zgrid <- seq(-4, 4, length.out = 2000)
+base  <- data.frame(z = zgrid, dens = dnorm(zgrid))
+
+# Build a small dataframe for facets (one per alpha)
+labels <- paste0("α = ", alpha, "  (z = ", sprintf("%.2f", z), ")")
+plot_df <- do.call(rbind, lapply(seq_along(alpha), function(i) {
+  df <- base
+  df$panel <- labels[i]
+  df$shade <- ifelse(df$z >= z[i], df$dens, NA_real_)
+  df
+}))
+vlines <- data.frame(panel = labels, x = z)
+
+ggplot(plot_df, aes(z, dens)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = 0, ymax = shade), alpha = 0.35, na.rm = TRUE) +
+  geom_vline(data = vlines, aes(xintercept = x), linetype = "dashed") +
+  facet_wrap(~ panel, nrow = 2) +
+  labs(title = "Standard Normal: P(Z > z) = α",
+       x = "z", y = "Density") +
+  theme_minimal()
+
+#### Normal distribution + z-score for a proportion variable (votes for Brown) ####
+
+# example 4.11 from the book (in the course section, not the exercises)
+
+# Set parameters
+n <- 1824       # number of voters
+n_sim <- 10000  # number of simulated elections
+# >> try changing n above (e.g. to 100, or 5000) and re-run this section -- what happens to the histogram and the curve?
+
+# Simulate each election: number of votes for Brown
+votes_Brown <- rbinom(n = n_sim, size = n, prob = 0.5)
+
+# Compute proportion of votes for Brown
+prop_Brown <- votes_Brown / n
+
+# Basic summary
+mean(prop_Brown)        # average vote share for Brown (should be close to 0.5)
+sd(prop_Brown)          # standard deviation across simulations : sqrt(p*(1-p)/n) is an estimation (in practice we usually do not know the underlying pop's sd)
+
+data <- data.frame(prop_Brown)
+
+# Plot with ggplot2: the simulated distribution (histogram) and the theoretical one (dnorm curve) together
+ggplot(data, aes(x = prop_Brown)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 0.005, fill = "skyblue", color = "white") +
+  stat_function(fun = dnorm, args = list(mean = 0.5, sd = sqrt(0.5 * (1 - 0.5) / n)), color = "steelblue", linewidth = 1) + # the theoretical curve, from the same mean/sd formulas we use below for the z-score
+  geom_vline(xintercept = 0.605, color = "red", linetype = "dashed", size = 1) +
+  annotate("text", x = 0.605, y = 0, label = "p = 0.605", color = "red", hjust = 1.5, vjust = -1) +
+  labs(
+    title = "Distribution of Vote Share for Brown: simulated vs. theoretical",
+    x = "Proportion voting for Brown",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+# simpler version (how I would plot it quickly, simulation only, no theoretical curve, no nice themes)
+# ggplot(data, aes(x = prop_Brown)) +
+#   geom_histogram(binwidth = 0.005, fill = "skyblue", color = "white") +
+#   geom_vline(xintercept = 0.605, color = "red", linetype = "dashed", size = 1)
+
+# calculation of a z-score:
+p_hat <- 0.605 # observed probability in sample
+p0 <- 0.5 # theoretical probability from population if votes are spread 50-50
+
+# the formula is essentially an estimation of how big the deviation is:
+# how many standard errors is the value observed from the mean
+# this is using the formulas from the "Data Analysis for Public Policy Formulas.pdf" file
+# (z score for one sample proportion), using se_0
+z <- (p_hat - p0) / sqrt(p0 * (1 - p0) / n) # formula for proportion z-score, we defined n before
+
+z
+
+# probability to observe a value larger than z in a normal distribution
+1 - pnorm(z) # pnorm calculates the probability of a sample mean being smaller than the z-score, in a normal distribution
+
+# >> this tells us that the population from which we sampled might be different from the one we simulated (mean = 0.5)
+
+##### ------- exercice (your turn) ------- #####
+
+# Same election as above (n = 1824 voters), but this time you observed 55% of the votes for Brown.
+# How unlikely would it have been to observe that, if the true population split were 50-50?
+
+# fill in the blanks below (replace the ___ ):
+
+p_hat <- ___   # the observed proportion in this new scenario
+p0    <- ___   # the population proportion we're testing against (50-50 split)
+n     <- ___   # sample size (same election, same number of voters)
+
+# 1) compute the z-score for this observed proportion
+#    hint: same formula as above -> (p_hat - p0) / sqrt(p0 * (1 - p0) / n)
+z <- ___
+
+# 2) how likely is it to observe a proportion this far from p0 (or further), just by chance?
+#    hint: think back to pnorm() from the toolbox -- do you want the left tail, right tail, or both (two-sided)?
+#    note: this is technically what's called a "p-value" -- we'll formalize that idea properly next class
+prob_extreme <- ___
+
+# 3) bonus: reuse the plotting code from the p0 = 0.6 example above to visualize this z-score
+#    on the standard normal curve (can add geom_vline with your new z value)
+#    geom_vline(xintercept = z, color = "red", linetype = "dashed")
+
+# 4) in a comment, write your conclusion: is 55% surprising under a 50-50 split? why or why not?
 
 #### 4.9 - skipped in class ####
 # For a normal distribution, verify that the probability between
@@ -324,132 +450,3 @@ p_std <- pnorm(3) - pnorm(-3)
 
 p_std <- pnorm(0.67) - pnorm(-0.67)
 p_std
-
-# >> in the next example we go from the probability to the z-score
-
-#### 4.10 - we can do it together quickly in class ####
-
-# Find the z-value for which the probability that a normal variable exceeds μ + zσ equals
-# (a) 0.01, (b) 0.025, (c) 0.05, (d) 0.10, (e) 0.25, (f) 0.50
-
-qnorm(1 - 0.01) # this is the simple way of doing it
-# note that the behavior is the area under the curve on the left of the computed quantile
-
-# next I propose a visualisation + a way to do it for multiple values
-
-# Target tail probabilities
-alpha <- c(0.01, 0.025, 0.05, 0.10, 0.25, 0.50)
-
-# z such that P(Z > z) = alpha
-z <- qnorm(1 - alpha) # we already have the answer here
-
-# Quick table (z rounded) + check via pnorm()
-res <- data.frame(alpha = alpha, z = round(z, 3),
-                  check = round(pnorm(z, lower.tail = FALSE), 3))
-print(res)
-
-# - Plot: shade right-tail area α in each panel
-zgrid <- seq(-4, 4, length.out = 2000)
-base  <- data.frame(z = zgrid, dens = dnorm(zgrid))
-
-# Build a small dataframe for facets (one per alpha)
-labels <- paste0("α = ", alpha, "  (z = ", sprintf("%.2f", z), ")")
-plot_df <- do.call(rbind, lapply(seq_along(alpha), function(i) {
-  df <- base
-  df$panel <- labels[i]
-  df$shade <- ifelse(df$z >= z[i], df$dens, NA_real_)
-  df
-}))
-vlines <- data.frame(panel = labels, x = z)
-
-ggplot(plot_df, aes(z, dens)) +
-  geom_line() +
-  geom_ribbon(aes(ymin = 0, ymax = shade), alpha = 0.35, na.rm = TRUE) +
-  geom_vline(data = vlines, aes(xintercept = x), linetype = "dashed") +
-  facet_wrap(~ panel, nrow = 2) +
-  labs(title = "Standard Normal: P(Z > z) = α",
-       x = "z", y = "Density") +
-  theme_minimal()
-
-#### Normal distribution + z-score for a proportion variable (votes for Brown) ####
-
-# example 4.11 from the book (in the course section, not the exercices)
-
-# Set parameters
-n <- 1824       # number of voters
-n_sim <- 10000  # number of simulated elections
-# >> try changing n above (e.g. to 100, or 5000) and re-run this section -- what happens to the histogram and the curve?
-
-# Simulate each election: number of votes for Brown
-votes_Brown <- rbinom(n = n_sim, size = n, prob = 0.5)
-
-# Compute proportion of votes for Brown
-prop_Brown <- votes_Brown / n
-
-# Basic summary
-mean(prop_Brown)        # average vote share for Brown (should be close to 0.5)
-sd(prop_Brown)          # standard deviation across simulations : sqrt(p*(1-p)/n) is an estimation (in practice we usually do not know the underlying pop's sd)
-
-data <- data.frame(prop_Brown)
-
-# Plot with ggplot2: the simulated distribution (histogram) and the theoretical one (dnorm curve) together
-ggplot(data, aes(x = prop_Brown)) +
-  geom_histogram(aes(y = after_stat(density)), binwidth = 0.005, fill = "skyblue", color = "white") +
-  stat_function(fun = dnorm, args = list(mean = 0.5, sd = sqrt(0.5 * (1 - 0.5) / n)), color = "steelblue", linewidth = 1) + # the theoretical curve, from the same mean/sd formulas we use below for the z-score
-  geom_vline(xintercept = 0.605, color = "red", linetype = "dashed", size = 1) +
-  annotate("text", x = 0.605, y = 0, label = "p = 0.605", color = "red", hjust = 1.5, vjust = -1) +
-  labs(
-    title = "Distribution of Vote Share for Brown: simulated vs. theoretical",
-    x = "Proportion voting for Brown",
-    y = "Density"
-  ) +
-  theme_minimal()
-
-# simpler version (how I would plot it quickly, simulation only, no theoretical curve, no nice themes)
-# ggplot(data, aes(x = prop_Brown)) +
-#   geom_histogram(binwidth = 0.005, fill = "skyblue", color = "white") +
-#   geom_vline(xintercept = 0.605, color = "red", linetype = "dashed", size = 1)
-
-# calculation of a z-score:
-p_hat <- 0.605 # observed probability in sample
-p0 <- 0.5 # theoretical probability from population if votes are spread 50-50
-
-# the formula is essentially an estimation of how big the deviation is:
-# how many standard errors is the value observed from the mean
-# this is using the formulas from the "Data Analysis for Public Policy Formulas.pdf" file
-# (z score for one sample proportion), using se_0
-z <- (p_hat - p0) / sqrt(p0 * (1 - p0) / n) # formula for proportion z-score, we defined n before
-
-z
-
-# probability to observe a value larger than z in a normal distribution
-1 - pnorm(z) # pnorm calculates the probability of a sample mean being smaller than the z-score, in a normal distribution
-
-# >> this tells us that the population from which we sampled might be different from the one we simulated (mean = 0.5)
-
-##### ------- exercice (your turn) ------- #####
-
-# Same election as above (n = 1824 voters), but this time you observed 55% of the votes for Brown.
-# How unlikely would it have been to observe that, if the true population split were 50-50?
-
-# fill in the blanks below (replace the ___ ):
-
-p_hat <- ___   # the observed proportion in this new scenario
-p0    <- ___   # the population proportion we're testing against (50-50 split)
-n     <- ___   # sample size (same election, same number of voters)
-
-# 1) compute the z-score for this observed proportion
-#    hint: same formula as above -> (p_hat - p0) / sqrt(p0 * (1 - p0) / n)
-z <- ___
-
-# 2) how likely is it to observe a proportion this far from p0 (or further), just by chance?
-#    hint: think back to pnorm() from the toolbox -- do you want the left tail, right tail, or both (two-sided)?
-#    note: this is technically what's called a "p-value" -- we'll formalize that idea properly next class
-prob_extreme <- ___
-
-# 3) bonus: reuse the plotting code from the p0 = 0.6 example above to visualize this z-score
-#    on the standard normal curve (can add geom_vline with your new z value)
-#    geom_vline(xintercept = z, color = "red", linetype = "dashed")
-
-# 4) in a comment, write your conclusion: is 55% surprising under a 50-50 split? why or why not?
-

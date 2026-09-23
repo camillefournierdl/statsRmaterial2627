@@ -8,7 +8,6 @@
 # - Simulating and comparing distributions across groups with histograms/density plots (3.74)
 # - How distribution shape and outliers affect mean vs. median vs. mode
 
-
 ##### ------- setup ------- #####
 
 ##### General comment:
@@ -47,7 +46,7 @@ Mode <- function(x) {
 
 Mode(dataset)
 
-sd(dataset) # is this using n or n-1? what's the difference?
+sd(dataset) # is this using n or n-1? what's the difference? (use the help function to find out, can also press F1 with cursor in the function name)
 
 # a few other quick descriptives worth knowing:
 summary(dataset) # min, max, quartiles, mean all at once
