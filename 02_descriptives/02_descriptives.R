@@ -20,7 +20,6 @@ library(tidyverse) # for data handling (dplyr), the pipe operator, and plotting 
 
 # to make sure you're using function from a given library, use dplyr::filter()
 
-
 ##### ------- toolbox ------- #####
 
 # in-class exercise: what does an outlier change?
@@ -154,7 +153,6 @@ ggplot(df, aes(x = region, y = workers, fill = region)) +
 # (a) Calculate the mean for each region
 mean_europe <- mean(europe)
 mean_africa <- mean(africa)
-
 
 # equivalent to sum(europe)/length(europe)
 mean_europe

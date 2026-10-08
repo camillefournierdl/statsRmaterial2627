@@ -2,7 +2,6 @@
 
 ##### ------- learnings today ------- #####
 # - Using R's normal-distribution toolbox: pnorm, dnorm, qnorm, rnorm
-# - The Empirical Rule (68/95/99.7%) and where it comes from
 # - Calculating a z-score (for a proportion or a mean) and interpreting it as "how many standard errors away from expected"
 # - The sampling distribution of a sample statistic (mean/proportion): why repeated samples vary, and how that connects to the idea of hypothesis testing, which we will cover in the next class
 
@@ -108,6 +107,7 @@ pnorm(3) - pnorm(-3)   # ~99.7% within 3 SD
 
 # made up example with reproduceable seed
 set.seed(123)
+
 # Suppose adult heights (in cm) are approximately Normal with:
 mu <- 170   # population mean height
 sigma <- 8  # population sd
@@ -161,7 +161,7 @@ ggplot(df_samp, aes(x, y)) +
                           "\nTwo-sided p = ", signif(p_two_mean, 3)),
            color = "black", hjust = 0) +
   labs(
-    title = "Sampling distribution of the sample mean under H0",
+    title = "Sampling distribution of the sample mean",
     x = "Sample mean (cm)",
     y = "Density"
   ) +
