@@ -108,7 +108,7 @@ t.test(reading_46, mu = 0, alternative = "greater")
 
 # >> what happened to the mean? to s? to t?
 mean(reading_46); sd(reading_46)
-# >> one extreme value is enough to change the t-test a lot -- we come back to this in part 4
+# >> one extreme value is enough to change the t-test a lot -- we come back to this in part 5
 
 
 ##### ------- part 3: two-sample tests ------- #####
@@ -199,29 +199,7 @@ t.test(after - before, mu = 0) # identical! a paired test is a one-sample test o
 t.test(after, before)
 # >> why? (hint: look at how much people differ from each other, vs. how much each person changes)
 
-
-##### ------- part 4: median tests (Wilcoxon) ------- #####
-
-# the t-test is about the mean, and assumes a (roughly) normal population (or a large n).
-# Wilcoxon tests work on the ranks of the values instead of the values themselves:
-# they are about the median (more precisely, the "location"), and need fewer assumptions.
-# the syntax is the same as t.test()
-
-# one sample (Wilcoxon signed-rank test), on the reading data from part 2:
-wilcox.test(reading, mu = 0, alternative = "greater") # (a warning about ties is normal here, values repeat)
-
-# >> guess first: what happens with the wrongly recorded 46 from part 2?
-wilcox.test(reading_46, mu = 0, alternative = "greater")
-# >> compare with the t-test on reading_46: why does the Wilcoxon test not change at all? (hint: ranks)
-
-# two independent samples (Wilcoxon rank-sum / Mann-Whitney test), on the iris data from part 3:
-wilcox.test(Sepal.Width ~ Species, data = iris2)
-
-# paired samples work too: wilcox.test(after, before, paired = TRUE)
-# >> so why not always use Wilcoxon? with normal-ish data the t-test has more power, and it tells you about the mean, with a CI
-
-
-##### ------- part 5: what does alpha mean? simulation ------- #####
+##### ------- part 4: what does alpha mean? simulation ------- #####
 
 ## >> Big underlying question: if there is NO effect at all, how often do we still find a "significant" one?
 
@@ -244,8 +222,29 @@ power <- mean(p_alt < alpha) # share of studies that (correctly) reject H0
 power
 1 - power                    # P(Type II error): there is an effect, but we miss it
 
-# >> guess first, then change the values above and re-run part (c):
+# >> guess first, then change the values above and re-run part (b):
 # - what happens to the power if you double n_obs? if true_diff = 0.2? if alpha = 0.01?
+
+##### ------- part 5: median tests (Wilcoxon) ------- #####
+
+# the t-test is about the mean, and assumes a (roughly) normal population (or a large n).
+# Wilcoxon tests work on the ranks of the values instead of the values themselves:
+# they are about the median (more precisely, the "location"), and need fewer assumptions.
+# the syntax is the same as t.test()
+
+# one sample (Wilcoxon signed-rank test), on the reading data from part 2:
+wilcox.test(reading, mu = 0, alternative = "greater") # (a warning about ties is normal here, values repeat)
+
+# >> guess first: what happens with the wrongly recorded 46 from part 2?
+wilcox.test(reading_46, mu = 0, alternative = "greater")
+# >> compare with the t-test on reading_46: why does the Wilcoxon test not change at all? (hint: ranks)
+
+# two independent samples (Wilcoxon rank-sum / Mann-Whitney test), on the iris data from part 3:
+wilcox.test(Sepal.Width ~ Species, data = iris2)
+
+# paired samples work too: wilcox.test(after, before, paired = TRUE)
+# >> so why not always use Wilcoxon? with normal-ish data the t-test has more power, and it tells you about the mean, with a CI
+
 
 
 ##### ------- exercises ------- #####
