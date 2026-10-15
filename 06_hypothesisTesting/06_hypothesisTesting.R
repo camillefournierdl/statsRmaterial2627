@@ -143,7 +143,7 @@ t_obs # same t as in the output above (the Welch df formula is a bit ugly, we le
 df_welch <- t.test(Sepal.Width ~ Species, data = iris2)$parameter
 
 # --- visualising what a two-sample t-test does (illustration, no need to learn this code) ---
-# p0: the data | p1: sampling distribution of each mean | p2: of the difference, with its 95% CI | p3: the test
+# p0: the data | p1: the data vs. uncertainty about each mean | p2: of the difference, with its 95% CI | p3: the test
 
 p0 <- ggplot(iris2, aes(x = Sepal.Width, fill = Species)) +
   geom_histogram(position = "identity", alpha = 0.4, bins = 15) +
@@ -154,11 +154,15 @@ tgrid <- tibble(t = seq(-4, 4, length.out = 400))
 
 mean_dens <- summ %>%
   crossing(tgrid) %>%
-  mutate(x = mean + t * se, density = dt(t, df) / se)
+  mutate(x = mean + t * se, density = dt(t, df) / dt(0, df)) # scaled so the peak = 1
 
-p1 <- ggplot(mean_dens, aes(x = x, y = density, colour = Species)) +
-  geom_line(linewidth = 1) +
-  labs(title = "2. Sampling distribution of each mean", x = "Mean Sepal.Width", y = "Density")
+p1 <- ggplot() +
+  geom_density(data = iris2, aes(x = Sepal.Width, y = after_stat(scaled), fill = Species),
+               alpha = 0.2, colour = NA) +
+  geom_line(data = mean_dens, aes(x = x, y = density, colour = Species), linewidth = 1) +
+  labs(title = "2. The data (shaded) vs. uncertainty about each mean (lines)",
+       subtitle = "lines: centred on our ybar, spread = se = sd / sqrt(n)",
+       x = "Sepal.Width", y = "Density (scaled, peak = 1)")
 
 ci <- diff_hat + c(-1, 1) * qt(0.975, df_welch) * se_diff
 diff_dens <- tgrid %>% mutate(x = diff_hat + t * se_diff, density = dt(t, df_welch) / se_diff)
@@ -170,7 +174,7 @@ p2 <- ggplot(diff_dens, aes(x = x, y = density)) +
   labs(title = "3. Difference in means, with 95% CI", subtitle = "does the CI include 0?",
        x = "Difference in means", y = "Density")
 
-null_dens <- tibble(t = seq(-5, 5, length.out = 1000)) %>% mutate(density = dt(t, df_welch))
+null_dens <- tibble(t = seq(-4, 4, length.out = 1000)) %>% mutate(density = dt(t, df_welch))
 
 p3 <- ggplot(null_dens, aes(x = t, y = density)) +
   geom_line(linewidth = 1) +
@@ -182,8 +186,9 @@ p3 <- ggplot(null_dens, aes(x = t, y = density)) +
        y = "Density")
 
 wrap_plots(p0, p1, p2, p3, ncol = 2) & theme_minimal()
+# >> careful: whether the two curves in panel 2 overlap is NOT the test -- the test is about the difference (panels 3-4)
 
-# --- paired samples: the same people measured twice ---
+# --- What if we have paired samples: the same people measured twice ---
 before <- c(3.2, 4.1, 3.8, 3.5, 4.0)
 after  <- c(3.6, 4.4, 4.1, 3.7, 4.3)
 
