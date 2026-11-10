@@ -37,6 +37,16 @@ ess <- ESS9_CH %>%
 
 ##### ------- toolbox ------- #####
 
+# the 4 new functions of today, on the iris data we already know (length and width of the petals of 150 flowers)
+head(iris)
+
+cor(iris$Petal.Length, iris$Petal.Width)      # correlation r, between -1 and 1
+cor.test(iris$Petal.Length, iris$Petal.Width) # same r + test of H0: rho = 0 (p-value, 95% CI)
+
+m <- lm(Petal.Width ~ Petal.Length, data = iris) # regression: y ~ x ("width explained by length")
+m                                  # intercept and slope only
+summary(m)                         # + standard errors, t-tests, p-values, R-squared
+
 ##### ------- part 1: look before you compute ------- #####
 
 # --- guess the correlation ---
